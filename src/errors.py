@@ -1,0 +1,2 @@
+class PigError(Exception):
+    pass
