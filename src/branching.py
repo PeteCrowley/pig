@@ -53,6 +53,6 @@ def delete_branch(pig_root: Path, branch_name: str) -> None:
     current_branch = get_current_branch(pig_root)
     if current_branch == branch_name:
         raise PigError("Cannot delete the current checked out branch")
-    branch_heads.pop(branch_name)
+    del branch_heads[branch_name]
     branch_heads_path = get_branch_heads_path(pig_root)
     branch_heads_path.write_text(json.dumps(branch_heads, indent=4))

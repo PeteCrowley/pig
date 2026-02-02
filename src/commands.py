@@ -46,6 +46,7 @@ def map_command(command: str) -> Callable:
         "merge": merge,
         "log": log,
         "branch": branch,
+        "rm": rm,
     }
     if command not in commandsMap:
         raise PigError(f"Unknown command: {command}")
@@ -95,16 +96,43 @@ def add(args):
             continue
         any_matches = True
 
-        relative_path = str(path.relative_to(pig_root))
-        new_hash = get_file_hash(path)
-        staging_info[str(relative_path)] = FileInfo(
-            hash=new_hash,
+        relative_path = path.relative_to(pig_root)
+        str_rel_path = relative_path.as_posix()
+        file_hash = get_file_hash(path)
+
+        prev_commit_info = get_commit_info(pig_root, current_commit_hash(pig_root))
+        if str_rel_path in prev_commit_info.files and file_hash == prev_commit_info.files[str_rel_path].hash:
+            print(f"File {relative_path} unchanged from last commit; skipping.")
+            continue   # no changes made to this file
+        
+        staging_info[str_rel_path] = FileInfo(
+            hash=file_hash,
             lastEdited=int(time.time())
         )
         print(f"Added {relative_path} to staging.")
 
     if not any_matches:
         print("No files matched the given pattern.")
+        return
+    
+    update_staging_info(pig_root, staging_info)
+
+def rm(args):
+    filepattern = args.filepattern
+    pig_root = find_pig_root_dir()
+    if pig_root is None:
+        raise PigError("not in a pig repository")
+    
+    staging_info = get_staging_info(pig_root)
+    any_matches = False
+    for filepath in list(staging_info.keys()):
+        if Path(filepath).match(filepattern):
+            any_matches = True
+            del staging_info[filepath]
+            print(f"Removed {filepath} from staging.")
+    
+    if not any_matches:
+        print("No staged files matched the given pattern.")
         return
     
     update_staging_info(pig_root, staging_info)

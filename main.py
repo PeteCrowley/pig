@@ -44,6 +44,10 @@ def main():
     branch_parser.add_argument("-c", "--create", required=False, metavar="BRANCH_NAME", help="Create a new branch")
     branch_parser.add_argument("-d", "--delete", required=False, metavar="BRANCH_NAME", help="Delete the specified branch")
     branch_parser.add_argument("-l", "--list", action="store_true", help="List all branches")
+
+    # rm command
+    rm_parser = subparsers.add_parser("rm", help="Remove files from staging")
+    rm_parser.add_argument("filepattern", help="File pattern to remove from staging")
     
     
     args = parser.parse_args()
