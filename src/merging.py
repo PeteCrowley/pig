@@ -1,26 +1,22 @@
-from .branching import get_current_branch, update_branch_head
-from .errors import PigError
 from pathlib import Path
-from .models import CommitInfo, FileInfo, HeadInfo, StagingInfo
 import difflib
 import time
+from .errors import PigError
+from .branching import get_current_branch, update_branch_head
+from .models import CommitInfo, FileInfo, HeadInfo
 from .commit_helpers import (
     current_commit_hash,
     get_commit_info,
     get_new_commit_hash,
     update_commit_info,
 )
-from .staging_helpers import (
-    get_staging_info,
-)
+from .staging_helpers import get_staging_info
 from .file_helpers import (
     read_compressed_file,
     write_file_info,
     get_file_hash,
 )
-from .repo_utils import (
-    update_head,
-)
+from .repo_utils import update_head
 from .recreatedirectory import clear_directory, recreate_directory
 
 def find_common_ancestor(pig_root: Path, commit_hash1: str, commit_hash2: str) -> str:

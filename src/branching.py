@@ -1,10 +1,7 @@
-from .errors import PigError
 from pathlib import Path
 import json
-from .repo_utils import (
-    get_head_info,
-    update_head,
-)
+from .errors import PigError
+from .repo_utils import get_head_info, update_head
 from .commit_helpers import current_commit_hash
 from .models import HeadInfo, BranchInfo
 from .recreatedirectory import recreate_directory

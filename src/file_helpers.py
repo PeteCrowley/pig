@@ -1,9 +1,9 @@
 
-from .errors import PigError
 from pathlib import Path
 import gzip
 import shutil
 import hashlib
+from .errors import PigError
 
 def write_file_info(pig_root: Path, file_hash: str, filepath: Path):
     compressed_dir = pig_root / ".pig" / "compressed-files"

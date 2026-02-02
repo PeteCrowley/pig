@@ -1,8 +1,6 @@
-import sys
-from pathlib import Path
-
 import argparse
 from src.commands import map_command
+from src.errors import PigError
 
 def main():
     parser = argparse.ArgumentParser(description="Pig CLI")
@@ -51,7 +49,10 @@ def main():
     
     
     args = parser.parse_args()
-    map_command(args.command)(args)
+    try:
+        map_command(args.command)(args)
+    except PigError as e:
+        print(f"pig error: {e}")
 
 
 if __name__ == "__main__":

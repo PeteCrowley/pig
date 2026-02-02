@@ -6,6 +6,7 @@
 |---------|-----------|-------------|
 | `init` | | Initialize a new pig repository |
 | `add` | `<filepattern>` | Add files to staging area |
+| `rm` | `<filepattern>` | Remove files from staging area |
 | `status` | | Show the status of the repository |
 | `commit` | `-m <message>` | Commit staged changes with a message |
 | `checkout` | `[-b] <name> [-s <start_point>]` | Checkout a branch or commit; use `-b` to create a new branch |
