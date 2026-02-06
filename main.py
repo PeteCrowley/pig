@@ -1,6 +1,7 @@
 import argparse
 from src.commands import map_command
 from src.errors import PigError
+from pathlib import Path
 
 def main():
     parser = argparse.ArgumentParser(description="Pig CLI")
@@ -46,6 +47,10 @@ def main():
     # rm command
     rm_parser = subparsers.add_parser("rm", help="Remove files from staging")
     rm_parser.add_argument("filepattern", help="File pattern to remove from staging")
+
+    # git-convert command
+    git_convert_parser = subparsers.add_parser("git-convert", help="Convert a git repository to a pig repository")
+    git_convert_parser.add_argument("git_root", type=Path, help="Path to the root of the git repository")
     
     
     args = parser.parse_args()

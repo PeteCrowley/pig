@@ -34,6 +34,7 @@ from .merging import (
     merge_commits,
 )
 from .models import CommitInfo, FileInfo, HeadInfo
+from .git_converter import create_pig_from_git_repo
 
 def map_command(command: str) -> Callable:
     commandsMap = {
@@ -47,6 +48,7 @@ def map_command(command: str) -> Callable:
         "log": log,
         "branch": branch,
         "rm": rm,
+        "git-convert": git_convert,
     }
     if command not in commandsMap:
         raise PigError(f"Unknown command: {command}")
@@ -274,5 +276,14 @@ def branch(args):
             prefix = "*" if branch_name == current_branch else " "
             print(f"{prefix} {branch_name}")
 
-        
+def git_convert(args):
+    init(None)
+    pig_root = find_pig_root_dir()
+    if pig_root is None:
+        raise PigError("failed to initialize pig repository")
+    if args.git_root is None:
+        raise PigError("git root path must be provided")
+    
+    create_pig_from_git_repo(args.git_root, pig_root)
+    print("Successfully converted git repository to pig repository.")
     
