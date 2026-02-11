@@ -1,6 +1,5 @@
 # pig
 `pig` stands for either "Pete's Implementation of Git" or "Python Implementation of Git". It's a project I created in order to better understand git internals so I can really know what's going on instead of brainlessly typing the same couple git commands over and over again. `pig` conceptually works the same as git with of course a few differences. I tried to mirror `git` commands the best I could and the ones I have implemented so far are in the table below. I also briefly describe how the project works below the table.
-
 ### Commands
 | Command | Arguments | Description |
 |---------|-----------|-------------|
@@ -12,7 +11,8 @@
 | `checkout` | `[-b] <name> [-s <start_point>]` | Checkout a branch or commit; use `-b` to create a new branch |
 | `switch` | `<name>` | Switch to an existing branch |
 | `merge` | `<name>` | Merge a branch into the current branch |
-| `log` | | Show commit logs |
+| `log` | `[-n <number>]`| Show commit logs in chronological order (default 10)|
+| `git-convert` | `<git_root>` | Convert a Git repository to a pig repository |
 | `branch` | `[-c <name>] [-d <name>] [-l]` | Manage branches: create, delete, or list |
 
 ### Project Overview
@@ -63,3 +63,6 @@ When merging branches, `pig` uses a 3-way merge strategy:
 4. Mark conflicting sections with conflict markers (`<<<<<<< HEAD`, `=======`, `>>>>>>> merge`) for manual resolution.
 
 This merge algorithm probably isn't as polished as what you'll see in git, but it works well enough for this project.
+
+#### Converting From Git to Pig
+The `git-convert <git_root>` command will convert an existing git repository into a `pig` repository. This is one of my favorite features because it allows me to take all my favorite git repositories and mess with them using `pig`. I tested this feature with multiple large git repos including `git` itself and it properly converts the repo over (save for symlinks and submodules). 

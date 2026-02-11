@@ -9,7 +9,7 @@ class CommitInfo(BaseModel):
     commitMessage: str
     author: str
     timestamp: int
-    parentCommit: str | None
+    parentCommits: list[str]
     files: dict[str,  FileInfo]
 
 type BranchInfo = dict[str, str]

@@ -37,6 +37,7 @@ def main():
 
     # log command
     log_parser = subparsers.add_parser("log", help="Show commit logs")
+    log_parser.add_argument("-n", "--number", type=int, default=10, help="Number of commits to show")
 
     # branch command
     branch_parser = subparsers.add_parser("branch", help="Manage branches")

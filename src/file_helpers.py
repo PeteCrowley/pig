@@ -14,6 +14,14 @@ def write_file_info(pig_root: Path, file_hash: str, filepath: Path):
         with gzip.open(dest_path, "wb") as f_out:
             shutil.copyfileobj(f_in, f_out)
 
+def write_file_info_from_content(pig_root: Path, file_hash: str, content: bytes):
+    compressed_dir = pig_root / ".pig" / "compressed-files"
+    dest_path = compressed_dir / file_hash
+    if dest_path.exists():
+        return
+    with gzip.open(dest_path, "wb") as f_out:
+        f_out.write(content)
+
 def read_compressed_file(pig_root: Path, file_hash: str) -> list[str]:
     compressed_file_path = pig_root / ".pig" / "compressed-files" / file_hash
     if not compressed_file_path.exists():
@@ -26,4 +34,9 @@ def get_file_hash(filepath: Path) -> str:
     with open(filepath, "rb") as f:
         while chunk := f.read(8192):
             hasher.update(chunk)
+    return hasher.hexdigest()
+
+def get_file_hash_from_content(content: bytes) -> str:
+    hasher = hashlib.sha256()
+    hasher.update(content)
     return hasher.hexdigest()

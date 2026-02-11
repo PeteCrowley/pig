@@ -1,8 +1,10 @@
+import heapq
 from .errors import PigError
 from pathlib import Path
 from typing import Callable
 import hashlib
 import time
+from collections import deque
 from .repo_utils import (
     find_pig_root_dir,
     update_head,
@@ -62,7 +64,7 @@ def init(args):
         commitMessage = "Initial empty commit",
         author = "Pete Crowley",
         timestamp = int(time.time()),
-        parentCommit = None,
+        parentCommits = [],
         files = {}
     )
     try:
@@ -195,7 +197,7 @@ def commit(args):
     current_commit_info.commitMessage = message
     current_commit_info.timestamp = int(time.time())
     current_commit_info.author = "Pete Crowley"  # placeholder for now
-    current_commit_info.parentCommit = current_commit_hash(pig_root)
+    current_commit_info.parentCommits = [current_commit_hash(pig_root)]
     update_commit_info(pig_root, new_commit_hash, current_commit_info)
     current_branch = get_current_branch(pig_root)
     if current_branch:
@@ -246,16 +248,47 @@ def log(args):
     pig_root = find_pig_root_dir()
     if pig_root is None:
         raise PigError("not in a pig repository")
-    # recursively print commit history
-    commit_hash = current_commit_hash(pig_root)
-    while commit_hash:
-        commit_info = get_commit_info(pig_root, commit_hash)
-        print(f"Commit: {commit_hash}")
-        print(f"Author: {commit_info.author}")
-        print(f"Date: {time.ctime(commit_info.timestamp)}")
-        print(f"\n    {commit_info.commitMessage}\n")
-        commit_hash = commit_info.parentCommit
+    if args.number <= 0:
+        raise PigError("number of commits to show must be positive")
 
+    head = current_commit_hash(pig_root)
+
+    heap = []
+
+    # caches & sets
+    commit_infos = {}
+    discovered = set()
+    printed = set()
+
+    def push_commit(hash_):
+        if hash_ in discovered or hash_ in printed:
+            return
+        info = get_commit_info(pig_root, hash_)
+        commit_infos[hash_] = info
+        heapq.heappush(heap, (-info.timestamp, hash_))
+        discovered.add(hash_)
+
+    push_commit(head)
+
+    printed_count = 0
+    while heap and printed_count < args.number:
+        neg_ts, cur = heapq.heappop(heap)
+        info = commit_infos[cur]
+        
+        print(f"Commit: {cur}")
+        print(f"Author: {info.author}")
+        print(f"Date: {time.ctime(info.timestamp)}")
+        print(f"\n    {info.commitMessage}\n")
+
+        printed.add(cur)
+        printed_count += 1
+
+        parents = list(info.parentCommits)
+        for p in parents:
+            if p not in discovered and p not in printed:
+                push_commit(p)
+    
+    
 def branch(args):
     pig_root = find_pig_root_dir()
     if pig_root is None:

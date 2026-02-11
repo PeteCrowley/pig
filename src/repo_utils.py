@@ -28,6 +28,3 @@ def get_head_info(pig_root: Path) -> HeadInfo:
 def update_head(pig_root: Path, new_head_info: HeadInfo) -> None:
     head_path = get_head_path(pig_root)
     head_path.write_text(new_head_info.type + ": " + new_head_info.value)
-
-
-    

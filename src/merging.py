@@ -169,7 +169,7 @@ def merge_commits(pig_root: Path, target_commit_hash: str) -> None:
         commitMessage = f"Merge commit {target_commit_hash} into {current_commit}",
         author = "Pete Crowley",
         timestamp = int(time.time()),
-        parentCommit = current_commit,
+        parentCommits=[current_commit, target_commit_hash],
         files = {}
     )
 
