@@ -35,7 +35,7 @@ from .branching import (
 from .merging import (
     merge_commits,
 )
-from .models import CommitInfo, FileInfo, HeadInfo
+from .models import CommitInfo, FileInfo, HeadInfo, StagingFileInfo
 from .git_converter import create_pig_from_git_repo
 
 def map_command(command: str) -> Callable:
@@ -95,6 +95,7 @@ def add(args):
     
     any_matches = False
     staging_info = get_staging_info(pig_root)
+    prev_commit_info = get_commit_info(pig_root, current_commit_hash(pig_root))
     for path in Path.cwd().rglob(filepattern):
         if not path.is_file():
             continue
@@ -103,17 +104,29 @@ def add(args):
         relative_path = path.relative_to(pig_root)
         str_rel_path = relative_path.as_posix()
         file_hash = get_file_hash(path)
-
-        prev_commit_info = get_commit_info(pig_root, current_commit_hash(pig_root))
+        
         if str_rel_path in prev_commit_info.files and file_hash == prev_commit_info.files[str_rel_path].hash:
             print(f"File {relative_path} unchanged from last commit; skipping.")
             continue   # no changes made to this file
         
-        staging_info[str_rel_path] = FileInfo(
+        staging_info[str_rel_path] = StagingFileInfo(
+            status="added" if str_rel_path not in prev_commit_info.files else "modified",
             hash=file_hash,
             lastEdited=int(time.time())
         )
         print(f"Added {relative_path} to staging.")
+    
+    # check if it is a file that was deleted
+    if not any_matches:
+        for filepath in prev_commit_info.files.keys():
+            if Path(filepath).match(filepattern) and not (pig_root / filepath).exists():
+                any_matches = True
+                staging_info[filepath] = StagingFileInfo(
+                    status="deleted",
+                    hash="",
+                    lastEdited=int(time.time())
+                )
+                print(f"Marked {filepath} as deleted in staging.")
 
     if not any_matches:
         print("No files matched the given pattern.")
@@ -155,8 +168,8 @@ def status(args):
         print("No files staged.")
         return
     print("Staged files:")
-    for filepath in staging_info.keys():
-        print(f" - {filepath}")
+    for filepath, file_staging_info in staging_info.items():
+        print(f" - {filepath} ({file_staging_info.status})")
 
 def commit_file(pig_root: Path, prev_commit_info: CommitInfo, filepath: Path):
     if not filepath.is_file():
@@ -187,8 +200,12 @@ def commit(args):
 
     current_commit_info = get_commit_info(pig_root, current_commit_hash(pig_root))
     any_changes = False
-    for filepath, _ in staging_info.items():
-        if commit_file(pig_root, current_commit_info, Path(filepath)):
+    for filepath, file_staging_info in staging_info.items():
+        if file_staging_info.status == "deleted":
+            if filepath in current_commit_info.files:
+                del current_commit_info.files[filepath]
+                any_changes = True
+        elif commit_file(pig_root, current_commit_info, Path(filepath)):
             any_changes = True
     if not any_changes:
         raise PigError("no changes to commit")
@@ -274,7 +291,7 @@ def log(args):
     while heap and printed_count < args.number:
         neg_ts, cur = heapq.heappop(heap)
         info = commit_infos[cur]
-        
+
         print(f"Commit: {cur}")
         print(f"Author: {info.author}")
         print(f"Date: {time.ctime(info.timestamp)}")

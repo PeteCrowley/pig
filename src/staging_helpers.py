@@ -1,6 +1,6 @@
 from pathlib import Path
 import json
-from .models import StagingInfo, FileInfo
+from .models import StagingInfo, StagingFileInfo
 
 def get_staging_path(pig_root: Path) -> Path:
     return pig_root / ".pig" / "staging.json"
@@ -10,7 +10,7 @@ def get_staging_info(pig_root: Path) -> StagingInfo:
     if not staging_path.exists():
         return {}
     data = json.loads(staging_path.read_text())
-    return {k: FileInfo(**v) for k, v in data.items()}
+    return {k: StagingFileInfo(**v) for k, v in data.items()}
 
 def update_staging_info(pig_root: Path, info: StagingInfo):
     staging_path = get_staging_path(pig_root)
